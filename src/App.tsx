@@ -12,21 +12,24 @@ function App() {
   const [error, setError] = useState("");
   const [noData, setNoData] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
 
   const handleSearch = async () => {
-    setError("");
-    setSelectedUser(null);
-    setRepos([]);
+  new Promise((resolve) => setTimeout(resolve, 1000));
+  setRepos([]);
+  setSelectedUser(null);
+  setLoadingSearch(true);
     try {
       const response = await fetch(
         `https://api.github.com/search/users?q=${username}&per_page=5`
       );
       const data = await response.json();
-      console.log(data);
-
       setUsers(data.items || []);
     } catch (err) {
-      setError("Failed to fetch users");
+      // setError("Failed to fetch users");
+    }
+    finally {
+      setLoadingSearch(false);
     }
   };
 
@@ -54,6 +57,7 @@ function App() {
     }
   };
 
+
   return (
     <Container style={{ height: "100vh" }}>
       <Row className="justify-content-md-center align-items-center h-100">
@@ -71,6 +75,11 @@ function App() {
                     placeholder="Enter username"
                     style={{ backgroundColor: "#e5e5e5" }}
                     onChange={(e) => setUsername(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSearch();
+                      }
+                    }}
                   />
                 </div>
                 <div className="d-flex flex-column gap-2">
@@ -78,8 +87,9 @@ function App() {
                     className="w-100 rounded-0"
                     variant="primary"
                     onClick={handleSearch}
+                    disabled={loadingSearch}
                   >
-                    Search
+                    {loadingSearch ? "Loading..." : "Search"}
                   </Button>
                   {users.length > 0 && (
                     <div>
